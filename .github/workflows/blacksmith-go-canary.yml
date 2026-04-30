@@ -1,0 +1,54 @@
+name: Blacksmith Go Canary
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/blacksmith-go-canary.yml'
+      - 'go.mod'
+      - 'go.sum'
+      - 'internal/config/**'
+      - 'internal/domain/**'
+      - 'internal/export/**'
+
+permissions:
+  contents: read
+
+jobs:
+  go-canary:
+    name: Blacksmith Go Canary
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Runner identity
+        run: |
+          set -euo pipefail
+          echo "repo=${GITHUB_REPOSITORY}"
+          echo "runner=${RUNNER_NAME:-unknown}"
+          echo "runner_os=${RUNNER_OS:-unknown}"
+          echo "runner_arch=${RUNNER_ARCH:-unknown}"
+          uname -a
+          go version
+          git --version
+
+      - name: Run stable package tests
+        run: |
+          set -euo pipefail
+          go test ./internal/config ./internal/domain ./internal/export
+
+      - name: Build CLI smoke
+        run: |
+          set -euo pipefail
+          mkdir -p build/bin
+          go build -trimpath -o build/bin/noise ./cmd/noise
+          test -x build/bin/noise
