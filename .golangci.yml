@@ -37,14 +37,9 @@ linters:
   enable:
     - govet
     - staticcheck
-    - gosimple
     - unused
     - errcheck
     - ineffassign
-    - typecheck
-    - gofmt
-    - gofumpt
-    - goimports
     - revive
     - gocyclo
     - dupl
@@ -97,3 +92,9 @@ linters-settings:
       - 'fmt\.Print(f|ln)?'
       - 'log\.Print(f|ln)?'
       - 'debug\.Print(f|ln)?'
+
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
