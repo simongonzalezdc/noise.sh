@@ -146,7 +146,7 @@ func (sm *ShortcutManager) initializeDefaultBindings() {
 }
 
 // registerBinding registers a new key binding
-func (sm *ShortcutManager) registerBinding(keyStr string, keyBinding key.Binding, description string, context KeyContext, category string) {
+func (sm *ShortcutManager) registerBinding(shortcut string, keyBinding key.Binding, description string, context KeyContext, category string) {
 	kb := &KeyBinding{
 		Key:         keyBinding,
 		Description: description,
@@ -154,7 +154,7 @@ func (sm *ShortcutManager) registerBinding(keyStr string, keyBinding key.Binding
 		Category:    category,
 	}
 
-	sm.bindings[keyStr] = append(sm.bindings[keyStr], kb)
+	sm.bindings[shortcut] = append(sm.bindings[shortcut], kb)
 }
 
 // SetContext sets the current keyboard context
@@ -179,7 +179,7 @@ func (sm *ShortcutManager) IsHelpMode() bool {
 
 // HandleKey handles a key press and returns the appropriate action
 func (sm *ShortcutManager) HandleKey(msg tea.KeyMsg) (ShortcutAction, bool) {
-	keyStr := msg.String()
+	shortcut := msg.String()
 
 	// First, handle explicit key types that may not produce a helpful string
 	switch msg.Type {
@@ -189,16 +189,16 @@ func (sm *ShortcutManager) HandleKey(msg tea.KeyMsg) (ShortcutAction, bool) {
 	}
 
 	// Check for exact key matches first (support multiple bindings per key)
-	if bindings, exists := sm.bindings[keyStr]; exists {
+	if bindings, exists := sm.bindings[shortcut]; exists {
 		for _, binding := range bindings {
 			if sm.isBindingActive(binding) {
-				return sm.createActionFromBinding(binding, keyStr), true
+				return sm.createActionFromBinding(binding, shortcut), true
 			}
 		}
 	}
 
 	// Check for help mode toggle (explicit string fallback)
-	if keyStr == "f1" || keyStr == "?" {
+	if shortcut == "f1" || shortcut == "?" {
 		sm.helpMode = !sm.helpMode
 		return ShortcutAction{Type: ActionToggleHelp}, true
 	}
@@ -206,7 +206,7 @@ func (sm *ShortcutManager) HandleKey(msg tea.KeyMsg) (ShortcutAction, bool) {
 	// Fallback: iterate all bindings and attempt to match heuristically.
 	// This handles cases where KeyMsg.String() representation and registered
 	// key identifiers diverge (tests sometimes construct KeyMsg with ctrl rune).
-	normalizedMsg := strings.ToLower(keyStr)
+	normalizedMsg := strings.ToLower(shortcut)
 	for _, bList := range sm.bindings {
 		for _, binding := range bList {
 			if !sm.isBindingActive(binding) {
@@ -254,7 +254,7 @@ func (sm *ShortcutManager) isBindingActive(binding *KeyBinding) bool {
 }
 
 // createActionFromBinding creates a shortcut action from a key binding
-func (sm *ShortcutManager) createActionFromBinding(binding *KeyBinding, keyStr string) ShortcutAction {
+func (sm *ShortcutManager) createActionFromBinding(binding *KeyBinding, shortcut string) ShortcutAction {
 	action := ShortcutAction{
 		Type:        ActionUnknown,
 		Description: binding.Description,
@@ -263,100 +263,100 @@ func (sm *ShortcutManager) createActionFromBinding(binding *KeyBinding, keyStr s
 
 	switch {
 	// Navigation actions
-	case keyStr == "tab" || keyStr == "ctrl+j":
+	case shortcut == "tab" || shortcut == "ctrl+j":
 		action.Type = ActionNextPane
-	case keyStr == "shift+tab" || keyStr == "ctrl+k":
+	case shortcut == "shift+tab" || shortcut == "ctrl+k":
 		action.Type = ActionPrevPane
-	case keyStr == "esc":
+	case shortcut == "esc":
 		action.Type = ActionBackToMenu
-	case keyStr == "home":
+	case shortcut == "home":
 		action.Type = ActionStartOfLine
-	case keyStr == "end":
+	case shortcut == "end":
 		action.Type = ActionEndOfLine
-	case keyStr == "ctrl+home":
+	case shortcut == "ctrl+home":
 		action.Type = ActionStartOfFile
-	case keyStr == "ctrl+end":
+	case shortcut == "ctrl+end":
 		action.Type = ActionEndOfFile
-	case keyStr == "page up" || keyStr == "pgup":
+	case shortcut == "page up" || shortcut == "pgup":
 		action.Type = ActionPageUp
-	case keyStr == "page down" || keyStr == "pgdn":
+	case shortcut == "page down" || shortcut == "pgdn":
 		action.Type = ActionPageDown
-	case keyStr == "ctrl+left" || keyStr == "alt+left":
+	case shortcut == "ctrl+left" || shortcut == "alt+left":
 		action.Type = ActionPrevWord
-	case keyStr == "ctrl+right" || keyStr == "alt+right":
+	case shortcut == "ctrl+right" || shortcut == "alt+right":
 		action.Type = ActionNextWord
 
 	// Text editing actions
-	case keyStr == "ctrl+c":
+	case shortcut == "ctrl+c":
 		action.Type = ActionCopy
-	case keyStr == "ctrl+v":
+	case shortcut == "ctrl+v":
 		action.Type = ActionPaste
-	case keyStr == "ctrl+x":
+	case shortcut == "ctrl+x":
 		action.Type = ActionCut
-	case keyStr == "ctrl+z":
+	case shortcut == "ctrl+z":
 		action.Type = ActionUndo
-	case keyStr == "ctrl+y":
+	case shortcut == "ctrl+y":
 		action.Type = ActionRedo
 
 	// Text selection actions
-	case keyStr == "ctrl+a":
+	case shortcut == "ctrl+a":
 		action.Type = ActionSelectAll
-	case keyStr == "shift+home":
+	case shortcut == "shift+home":
 		action.Type = ActionSelectToStartOfLine
-	case keyStr == "shift+end":
+	case shortcut == "shift+end":
 		action.Type = ActionSelectToEndOfLine
-	case keyStr == "ctrl+shift+home":
+	case shortcut == "ctrl+shift+home":
 		action.Type = ActionSelectToStartOfFile
-	case keyStr == "ctrl+shift+end":
+	case shortcut == "ctrl+shift+end":
 		action.Type = ActionSelectToEndOfFile
-	case keyStr == "shift+left":
+	case shortcut == "shift+left":
 		action.Type = ActionSelectLeft
-	case keyStr == "shift+right":
+	case shortcut == "shift+right":
 		action.Type = ActionSelectRight
-	case keyStr == "shift+up":
+	case shortcut == "shift+up":
 		action.Type = ActionSelectUp
-	case keyStr == "shift+down":
+	case shortcut == "shift+down":
 		action.Type = ActionSelectDown
 
 	// Search actions
-	case keyStr == "ctrl+shift+f":
+	case shortcut == "ctrl+shift+f":
 		action.Type = ActionFind
-	case keyStr == "ctrl+h":
+	case shortcut == "ctrl+h":
 		action.Type = ActionReplace
-	case keyStr == "f3":
+	case shortcut == "f3":
 		action.Type = ActionFindNext
-	case keyStr == "shift+f3":
+	case shortcut == "shift+f3":
 		action.Type = ActionFindPrev
 	// ctrl+g is now only used for AI unstick
 
 	// Quick tools actions
-	case keyStr == "ctrl+f":
+	case shortcut == "ctrl+f":
 		action.Type = ActionChordPicker
-	case keyStr == "ctrl+shift+b":
+	case shortcut == "ctrl+shift+b":
 		action.Type = ActionBPMTapper
 
 	// AI Quick Actions
-	case keyStr == "alt+g":
+	case shortcut == "alt+g":
 		action.Type = ActionAIUnstick
-	case keyStr == "alt+r":
+	case shortcut == "alt+r":
 		action.Type = ActionAISpark
-	case keyStr == "alt+v":
+	case shortcut == "alt+v":
 		action.Type = ActionAITweak
-	case keyStr == "alt+c":
+	case shortcut == "alt+c":
 		action.Type = ActionAICheck
 
 	// File operations
-	case keyStr == "ctrl+n":
+	case shortcut == "ctrl+n":
 		action.Type = ActionNewFile
-	case keyStr == "ctrl+o":
+	case shortcut == "ctrl+o":
 		action.Type = ActionOpenFile
-	case keyStr == "ctrl+s":
+	case shortcut == "ctrl+s":
 		action.Type = ActionSave
-	case keyStr == "ctrl+shift+s":
+	case shortcut == "ctrl+shift+s":
 		action.Type = ActionSaveAs
-	case keyStr == "ctrl+e":
+	case shortcut == "ctrl+e":
 		action.Type = ActionExport
-	case keyStr == "ctrl+w":
+	case shortcut == "ctrl+w":
 		// ctrl+w is context-sensitive: toggle word wrap in editor, close file otherwise
 		if sm.context == ContextEditor {
 			action.Type = ActionToggleWordWrap
@@ -364,48 +364,48 @@ func (sm *ShortcutManager) createActionFromBinding(binding *KeyBinding, keyStr s
 			action.Type = ActionCloseFile
 		}
 	// Export format shortcuts
-	case keyStr == "ctrl+shift+m":
+	case shortcut == "ctrl+shift+m":
 		action.Type = ActionExportMarkdown
 	// ctrl+shift+t is now only used for theory tools
-	case keyStr == "ctrl+shift+p":
+	case shortcut == "ctrl+shift+p":
 		action.Type = ActionExportChordPro
 
 	// Editor features
-	case keyStr == "ctrl+l":
+	case shortcut == "ctrl+l":
 		action.Type = ActionToggleLineNumbers
-	case keyStr == "ctrl+w" && sm.context == ContextEditor:
+	case shortcut == "ctrl+w" && sm.context == ContextEditor:
 		action.Type = ActionToggleWordWrap
-	case keyStr == "ctrl+i":
+	case shortcut == "ctrl+i":
 		action.Type = ActionToggleAutoIndent
-	case keyStr == "ctrl+b":
+	case shortcut == "ctrl+b":
 		action.Type = ActionToggleBracketMatching
 
 	// Application actions
-	case keyStr == "ctrl+q":
+	case shortcut == "ctrl+q":
 		action.Type = ActionQuit
-	case keyStr == "ctrl+,":
+	case shortcut == "ctrl+,":
 		action.Type = ActionSettings
-	case keyStr == "ctrl+shift+t":
+	case shortcut == "ctrl+shift+t":
 		action.Type = ActionThemeCycle
-	case keyStr == "ctrl+shift+n":
+	case shortcut == "ctrl+shift+n":
 		action.Type = ActionNextTheme
-	case keyStr == "ctrl+shift+p":
+	case shortcut == "ctrl+shift+p":
 		action.Type = ActionPreviousTheme
-	case keyStr == "ctrl+m":
+	case shortcut == "ctrl+m":
 		action.Type = ActionAudioTools
 
 	// Preview actions
-	case keyStr == "up":
+	case shortcut == "up":
 		action.Type = ActionPreviewUp
-	case keyStr == "down":
+	case shortcut == "down":
 		action.Type = ActionPreviewDown
-	case keyStr == "left":
+	case shortcut == "left":
 		action.Type = ActionPreviewLeft
-	case keyStr == "right":
+	case shortcut == "right":
 		action.Type = ActionPreviewRight
-	case keyStr == "space":
+	case shortcut == "space":
 		action.Type = ActionPreviewNextPage
-	case keyStr == "shift+space":
+	case shortcut == "shift+space":
 		action.Type = ActionPreviewPrevPage
 	}
 

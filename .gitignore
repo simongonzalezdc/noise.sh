@@ -46,6 +46,11 @@ config/
 .env.*
 *.pem
 *.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+!.env.example
 
 # Database files
 *.db

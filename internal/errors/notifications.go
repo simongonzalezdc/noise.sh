@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
@@ -210,6 +211,13 @@ func (nm *NotificationManager) GetActiveNotifications() []*Notification {
 			active = append(active, notification)
 		}
 	}
+
+	sort.Slice(active, func(i, j int) bool {
+		if active[i].CreatedAt.Equal(active[j].CreatedAt) {
+			return active[i].ID < active[j].ID
+		}
+		return active[i].CreatedAt.Before(active[j].CreatedAt)
+	})
 
 	return active
 }
