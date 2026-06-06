@@ -35,7 +35,7 @@
     "qs": "^6.15.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "realtime-bpm-analyzer": "^4.0.2",
+    "realtime-bpm-analyzer": "^5.0.13",
     "tailwind-merge": "^3.4.0",
     "tmp": "^0.2.7",
     "tonal": "^6.4.2",
