@@ -182,7 +182,7 @@ jobs:
           rm -rf "${BUILD_DIR}"
 
       - name: Upload packaged artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: package-${{ matrix.goos }}-${{ matrix.goarch }}
           path: |
@@ -211,7 +211,7 @@ jobs:
           go run ./tools/release/main.go checksums --input-dir dist --output build/checksums.txt
 
       - name: Upload checksums artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: checksums
           path: build/checksums.txt
@@ -330,7 +330,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release notes and changelog artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: release-documentation
           path: |
